@@ -1,0 +1,43 @@
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+h1_SW35xx	KEYWORD1
+SW35xx	KEYWORD1
+fastChargeType_t	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+readStatus	KEYWORD2
+readConfig	KEYWORD2
+PDHardReset	KEYWORD2
+rebroadcastPDO	KEYWORD2
+setMaxCurrent5A	KEYWORD2
+
+vin_mV	KEYWORD2
+vout_mV	KEYWORD2
+iout1_mA	KEYWORD2
+iout2_mA	KEYWORD2
+fastChargeType	KEYWORD2
+PDVersion	KEYWORD2
+
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+NOT_FAST_CHARGE	LITERAL1
+QC2	LITERAL1
+QC3	LITERAL1
+FCP	LITERAL1
+SCP	LITERAL1
+PD_FIX	LITERAL1
+PD_PPS	LITERAL1
+MTKPE1	LITERAL1
+MTKPE2	LITERAL1
+LVDC	LITERAL1
+SFCP	LITERAL1
+AFC	LITERAL1
+

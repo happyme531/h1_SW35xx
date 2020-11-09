@@ -1,0 +1,14 @@
+{
+  "name": "h1_SW35xx",
+  "description": "Use your Arduino to control SW35xx series fast charger chips.",
+  "keywords": "i2c,SW3518,SW3518s",
+  "authors":{
+    "name": "happyme531"
+  },
+  "repository":{
+    "type": "git",
+    "url": "https://github.com/happyme531/h1_SW35xx.git"
+  },
+  "version": "0.0.1",
+  "framework": "arduino"
+}
