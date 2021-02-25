@@ -5,6 +5,7 @@
 h1_SW35xx	KEYWORD1
 SW35xx	KEYWORD1
 fastChargeType_t	KEYWORD1
+PDCmd_t	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -12,8 +13,9 @@ fastChargeType_t	KEYWORD1
 
 begin	KEYWORD2
 readStatus	KEYWORD2
-readConfig	KEYWORD2
-PDHardReset	KEYWORD2
+sendPDCmd	KEYWORD2
+setMaxCurrentsFixed	KEYWORD2
+setMaxCurrentsPPS	KEYWORD2
 rebroadcastPDO	KEYWORD2
 setMaxCurrent5A	KEYWORD2
 
@@ -41,3 +43,4 @@ LVDC	LITERAL1
 SFCP	LITERAL1
 AFC	LITERAL1
 
+HARDRESET	LITERAL1

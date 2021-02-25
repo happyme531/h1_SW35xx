@@ -2,32 +2,6 @@
 #include <Wire.h>
 #include <inttypes.h>
 
-#define SW35XX_IC_VERSION 0x01
-#define SW35XX_FCX_STATUS 0x06
-#define SW35XX_PWR_STATUS 0x07
-#define SW35XX_I2C_ENABLE 0x12
-#define SW35XX_I2C_CTRL 0x13
-#define SW35XX_ADC_DATA_TYPE 0x3a
-#define SW35XX_ADC_DATA_BUF_H 0x3b
-#define SW35XX_PD_SRC_REQ 0x70
-#define SW35XX_ADC_DATA_BUF_L 0x3c
-#define SW35XX_PWR_CONF 0xa6
-#define SW35XX_QC_CONF0 0xaa
-#define SW35XX_VID_CONF0 0xaf
-#define SW35XX_PD_CONF1 0xb0
-#define SW35XX_PD_CONF2 0xb1
-#define SW35XX_PD_CONF3 0xb2
-#define SW35XX_PD_CONF4 0xb3
-#define SW35XX_PD_CONF5 0xb4
-#define SW35XX_PD_CONF6 0xb5
-#define SW35XX_PD_CONF7 0xb6
-#define SW35XX_PD_CONF8 0xb7
-#define SW35XX_PD_CONF9 0xb8
-#define SW35XX_QC_CONF1 0xb9
-#define SW35XX_QC_CONF2 0xba
-#define SW35XX_PD_CONF10 0xbe
-#define SW35XX_VID_CONF1 0xbf
-
 namespace h1_SW35xx {
 
 class SW35xx {
@@ -47,6 +21,10 @@ public:
     AFC
   };
 
+  enum PDCmd_t {
+    HARDRESET = 1
+  };
+
 private:
   TwoWire &_i2c;
 
@@ -54,66 +32,84 @@ public:
   SW35xx(TwoWire &i2c = Wire);
   ~SW35xx();
   void begin();
+  /**
+   * @brief 读取当前充电状态
+   * 
+   */
   void readStatus();
-  void readConfig();
-  void PDHardReset();
+  /**
+   * @brief 发送PD命令
+   * 
+   * @note 这个芯片似乎可以发送很多种PD命令，但是寄存器文档里只有hardreset. 如果你有PD抓包工具，可以尝试2~15的不同参数，摸索出对应的命令。记得开个pr告诉我!
+   */
+  void sendPDCmd(PDCmd_t cmd);
+  /**
+   * @brief 重新广播PDO. 改变最大电流后需要调用此函数或者重新插拔USB线来让设置生效.
+   */
   void rebroadcastPDO();
+  /**
+   * @brief 把PD所有组别的电流设置成5A. 如果你的芯片不是sw3518s请慎重使用
+   */
   void setMaxCurrent5A();
-
+   /**
+   * @brief 设置固定电压组别的最大输出电流
+   * 
+   * @param ma_xx 各组别的最大输出电流,单位毫安,最小分度50ma,设为0则关闭
+   * @note 5v无法关闭
+   */
+  void setMaxCurrentsFixed(uint32_t ma_5v, uint32_t ma_9v, uint32_t ma_12v, uint32_t ma_15v, uint32_t ma_20v);
+  /**
+   * @brief 设置PPS组别的最大输出电流
+   * 
+   * @param ma_xxx 各组别最大输出电流,单位毫安,最小分度50ma,设为0则关闭
+   * @note 注意 PD 配置的最大功率大于 60W 时, pps1 将不会广播 (TODO:datasheet这么写的，没试过)
+   *       pps1 的最高电压需要大于 pps0 的最高电压，否则 pps1 不会广播;
+   */
+  void setMaxCurrentsPPS(uint32_t ma_pps1, uint32_t ma_pps2);
+  /**
+  //  * @brief 重置最大输出电流
+  //  * 
+  //  * @note 20v组别的电流不会被重置
+  //  */
+  // void resetMaxCurrents();
+  // /**
+  //  * @brief 启用Emarker检测
+  //  */
+  // void enableEmarker();
+  // /**
+  //  * @brief 禁用Emarker检测
+  //  */
+  // void disableEmarker();
 public:
+  /**
+   * @brief 输入电压
+   */
   uint16_t vin_mV;
+  /**
+   * @brief 输出电压
+   */
   uint16_t vout_mV;
+  /**
+   * @brief 输出电流1(type-C)
+   */
   uint16_t iout1_mA;
+  /**
+   * @brief 输出电流2(type-A)
+   */
   uint16_t iout2_mA;
-  float temperature;
+  //float temperature;  //TODO
+  /**
+   * @brief 快充协议
+   */
   enum fastChargeType_t fastChargeType;
+  /**
+   * @brief PD版本(2或者3)
+   */
   uint8_t PDVersion;
 
 public:
-  uint8_t chipVersion;
-  bool isBuckOn;
-  bool isPort1On;
-  bool isPort2On;
-  uint8_t pwr_icc;
-  bool enableQC3;
-  uint16_t vendorID;
-  bool enablecustomPD5VCurrent;
-  uint16_t customPD5VCurrent_mA;
-  bool enablecustomPD9VCurrent;
-  uint16_t customPD9VCurrent_mA;
-  bool enablecustomPD12VCurrent;
-  uint16_t customPD12VCurrent_mA;
-  bool enablecustomPD15VCurrent;
-  uint16_t customPD15VCurrent_mA;
-  uint16_t customPD20VCurrent_mA;
-  bool enablecustomPPS0Current;
-  uint16_t customPPS0Current_mA;
-  bool enablecustomPPS1Current;
-  uint16_t customPPS1Current_mA;
-  bool enablePPS1;
-  bool enablePPS0;
-  bool enablePD20V;
-  bool enablePD15V;
-  bool enablePD12V;
-  bool enablePD9V;
-  bool enablePDEmarker;
-  bool enablePD3;
-  bool enablePD5V2A;
-  bool enablePD65WEmarker;
-  bool enablePort1FastCharge;
-  bool enablePort2FastCharge;
-  bool enablePD;
-  bool enableQC;
-  bool enableFCP;
-  bool enableSCP;
-  bool enableMTKPE;
-  bool enableSFCP;
-  bool enableAFC;
-  uint8_t NonPDMaxVoltage_V;
-  bool PPS1CustomMaxVoltageEnable;
-  uint8_t PPS1CustomMaxVoltage_V;
-  bool PPS2CustomMaxVoltageEnable;
-  uint8_t PPS2CustomMaxVoltage_V;
+//TODO
+
 private:
   bool _last_config_read_success;
 };
