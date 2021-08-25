@@ -37,25 +37,60 @@
 #define SW35XX_PD_CONF10 0xbe
 #define SW35XX_VID_CONF1 0xbf
 
+#define I2C_RETRIES 10
+
 namespace h1_SW35xx {
 
 SW35xx::SW35xx(TwoWire &i2c) : _i2c(i2c) {}
 SW35xx::~SW35xx() {}
 
 int SW35xx::i2cReadReg8(const uint8_t reg) {
-  _i2c.beginTransmission(SW35XX_ADDRESS);
-  _i2c.write(reg);
-  _i2c.endTransmission();
+  for (int i=0; i<I2C_RETRIES; i++) {
+    _i2c.beginTransmission(SW35XX_ADDRESS);
+    if (_i2c.write(reg) != 1) {
+      continue;
+    }
+    if (_i2c.endTransmission() != 0) {
+      continue;
+    }
 
-  _i2c.requestFrom(SW35XX_ADDRESS, 1);
-  return _i2c.read();
+    if (_i2c.requestFrom(SW35XX_ADDRESS, 1) != 1) {
+      continue;
+    }
+
+    /* Wait until data is available if required */
+    for (int k=0; !_i2c.available() && k<I2C_RETRIES; k++) {
+      delay(10);
+    }
+
+    const int value = _i2c.read();
+    if (value < 0) {
+      continue;
+    }
+    return value;
+  }
+
+  return 0;
 }
 
 int SW35xx::i2cWriteReg8(const uint8_t reg, const uint8_t data) {
-  _i2c.beginTransmission(SW35XX_ADDRESS);
-  _i2c.write(reg);
-  _i2c.write(data);
-  return _i2c.endTransmission();
+  int error = -1;
+
+  for (int i=0; i<I2C_RETRIES; i++) {
+    _i2c.beginTransmission(SW35XX_ADDRESS);
+    if (_i2c.write(reg) != 1) {
+      continue;
+    }
+    if (_i2c.write(data) != 1) {
+      continue;
+    }
+    error = _i2c.endTransmission();
+    if (error == 0) {
+      return 0;
+    }
+  }
+
+  return error;
 }
 
 void SW35xx::begin(){
