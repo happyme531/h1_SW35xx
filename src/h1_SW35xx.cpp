@@ -55,48 +55,44 @@ void SW35xx::begin(){
   i2cWriteReg8(SW35XX_I2C_CTRL, 0x02);
 }
 
+uint16_t SW35xx::readADCDataBuffer(const enum ADCDataType type) {
+  i2cWriteReg8(SW35XX_ADC_DATA_TYPE, type);
+
+  uint16_t value = i2cReadReg8(SW35XX_ADC_DATA_BUF_H) << 4;
+  value |= i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
+
+  return value;
+}
+
 void SW35xx::readStatus() {
-  uint16_t tmp;
+  uint16_t vin = 0;
+  uint16_t vout = 0;
+  uint16_t iout_usbc = 0;
+  uint16_t iout_usba = 0;
+
   //读取输入电压
-  i2cWriteReg8(SW35XX_ADC_DATA_TYPE, 0x01);
-
-  tmp = i2cReadReg8(SW35XX_ADC_DATA_BUF_H) << 4;
-  tmp += i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
-  vin_mV = tmp * 10;
-  tmp = 0;
+  vin = readADCDataBuffer(ADC_VIN);
+  vin_mV = vin * 10;
   //读取输出电压
-  i2cWriteReg8(SW35XX_ADC_DATA_TYPE, 0x02);
-
-  tmp = i2cReadReg8(SW35XX_ADC_DATA_BUF_H) << 4;
-  tmp += i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
-  vout_mV = tmp * 6;
-  tmp = 0;
+  vout = readADCDataBuffer(ADC_VOUT);
+  vout_mV = vout * 6;
   //读取接口1输出电流
-  i2cWriteReg8(SW35XX_ADC_DATA_TYPE, 0x03);
-
-  tmp = i2cReadReg8(SW35XX_ADC_DATA_BUF_H) << 4;
-  tmp += i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
-
-  if (tmp > 15) //在没有输出的情况下读到的数据是15
-    iout_usbc_mA = tmp * 5 / 2;
+  iout_usbc = readADCDataBuffer(ADC_IOUT_USB_C);
+  if (iout_usbc > 15) //在没有输出的情况下读到的数据是15
+    iout_usbc_mA = iout_usbc * 5 / 2;
   else
     iout_usbc_mA = 0;
-  tmp = 0;
 
   //读取接口2输出电流
-  i2cWriteReg8(SW35XX_ADC_DATA_TYPE, 0x04);
-
-  tmp = i2cReadReg8(SW35XX_ADC_DATA_BUF_H) << 4;
-  tmp += i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
-  if (tmp > 15)
-    iout_usba_mA = tmp * 5 / 2;
+  iout_usba = readADCDataBuffer(ADC_IOUT_USB_A);
+  if (iout_usba > 15)
+    iout_usba_mA = iout_usba * 5 / 2;
   else
     iout_usba_mA = 0;
-  tmp = 0;
   //读取pd版本和快充协议
-  tmp = i2cReadReg8(SW35XX_FCX_STATUS);
-  PDVersion = ((tmp & 0x30) >> 4) + 1;
-  fastChargeType = (fastChargeType_t)(tmp & 0x0f);
+  const uint8_t status = i2cReadReg8(SW35XX_FCX_STATUS);
+  PDVersion = ((status & 0x30) >> 4) + 1;
+  fastChargeType = (fastChargeType_t)(status & 0x0f);
 }
 void SW35xx::unlock_i2c_write() {
   i2cWriteReg8(SW35XX_I2C_ENABLE, 0x20);

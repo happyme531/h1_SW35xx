@@ -49,6 +49,14 @@ public:
   };
 
 private:
+  enum ADCDataType {
+    ADC_VIN = 1,
+    ADC_VOUT = 2,
+    ADC_IOUT_USB_C = 3,
+    ADC_IOUT_USB_A = 4,
+    ADC_TEMPERATURE = 6,
+  };
+
   TwoWire &_i2c;
 
   int i2cReadReg8(const uint8_t reg);
@@ -56,6 +64,8 @@ private:
 
   void unlock_i2c_write();
   void lock_i2c_write();
+
+  uint16_t readADCDataBuffer(const enum ADCDataType type);
 
 public:
   SW35xx(TwoWire &i2c = Wire);
