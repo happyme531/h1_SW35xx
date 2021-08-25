@@ -28,6 +28,12 @@ public:
 private:
   TwoWire &_i2c;
 
+  int i2cReadReg8(const uint8_t reg);
+  int i2cWriteReg8(const uint8_t reg, const uint8_t data);
+
+  void unlock_i2c_write();
+  void lock_i2c_write();
+
 public:
   SW35xx(TwoWire &i2c = Wire);
   ~SW35xx();
