@@ -117,6 +117,21 @@ void SW35xx::readStatus(const bool useADCDataBuffer) {
   PDVersion = ((status & 0x30) >> 4) + 1;
   fastChargeType = (fastChargeType_t)(status & 0x0f);
 }
+
+float SW35xx::readTemperature(const bool useADCDataBuffer) {
+  uint16_t temperature = 0;
+
+  if (useADCDataBuffer) {
+    temperature = readADCDataBuffer(ADC_TEMPERATURE);
+  } else {
+    temperature = i2cReadReg8(SW35XX_ADC_TS_H) << 4;
+    temperature |= i2cReadReg8(SW35XX_ADC_TS_L) & 0x0F;
+  }
+
+  /* return it in mV */
+  return temperature * 0.5;
+}
+
 void SW35xx::unlock_i2c_write() {
   i2cWriteReg8(SW35XX_I2C_ENABLE, 0x20);
   i2cWriteReg8(SW35XX_I2C_ENABLE, 0x40);

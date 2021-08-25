@@ -77,6 +77,10 @@ public:
    */
   void readStatus(const bool useADCDataBuffer=false);
   /**
+   * @brief Returns the voltage of the NTC in mV
+   */
+  float readTemperature(const bool useADCDataBuffer=false);
+  /**
    * @brief 发送PD命令
    * 
    * @note 这个芯片似乎可以发送很多种PD命令，但是寄存器文档里只有hardreset. 如果你有PD抓包工具，可以尝试2~15的不同参数，摸索出对应的命令。记得开个pr告诉我!
@@ -142,7 +146,6 @@ public:
    * @brief 输出电流2(type-A)
    */
   uint16_t iout_usba_mA;
-  //float temperature;  //TODO
   /**
    * @brief 快充协议
    */
