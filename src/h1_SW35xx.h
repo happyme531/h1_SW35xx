@@ -127,11 +127,11 @@ public:
   /**
    * @brief 输出电流1(type-C)
    */
-  uint16_t iout1_mA;
+  uint16_t iout_usbc_mA;
   /**
    * @brief 输出电流2(type-A)
    */
-  uint16_t iout2_mA;
+  uint16_t iout_usba_mA;
   //float temperature;  //TODO
   /**
    * @brief 快充协议

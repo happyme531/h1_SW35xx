@@ -59,8 +59,8 @@ void loop() {
   Serial.println("=======================================");
   Serial.printf("Current input voltage:%dmV\n", sw.vin_mV);
   Serial.printf("Current output voltage:%dmV\n", sw.vout_mV);
-  Serial.printf("Current output1 current:%dmA\n", sw.iout1_mA);
-  Serial.printf("Current output2 current:%dmA\n", sw.iout2_mA);
+  Serial.printf("Current USB-C current:%dmA\r\n", sw.iout_usbc_mA);
+  Serial.printf("Current USB-A current:%dmA\r\n", sw.iout_usba_mA);
   Serial.printf("Current fast charge type:%s\n", fastChargeType2String(sw.fastChargeType));
   if (sw.fastChargeType == SW35xx::PD_FIX || sw.fastChargeType == SW35xx::PD_PPS)
     Serial.printf("Current PD version:%d\n", sw.PDVersion);

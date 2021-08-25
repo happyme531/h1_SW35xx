@@ -78,9 +78,9 @@ void SW35xx::readStatus() {
   tmp += i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
 
   if (tmp > 15) //在没有输出的情况下读到的数据是15
-    iout1_mA = tmp * 5 / 2;
+    iout_usbc_mA = tmp * 5 / 2;
   else
-    iout1_mA = 0;
+    iout_usbc_mA = 0;
   tmp = 0;
 
   //读取接口2输出电流
@@ -89,9 +89,9 @@ void SW35xx::readStatus() {
   tmp = i2cReadReg8(SW35XX_ADC_DATA_BUF_H) << 4;
   tmp += i2cReadReg8(SW35XX_ADC_DATA_BUF_L) | 0x0f;
   if (tmp > 15)
-    iout2_mA = tmp * 5 / 2;
+    iout_usba_mA = tmp * 5 / 2;
   else
-    iout2_mA = 0;
+    iout_usba_mA = 0;
   tmp = 0;
   //读取pd版本和快充协议
   tmp = i2cReadReg8(SW35XX_FCX_STATUS);
