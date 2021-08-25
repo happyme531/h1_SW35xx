@@ -1,4 +1,5 @@
 #pragma once
+#include "c_types.h"
 #include <Wire.h>
 #include <inttypes.h>
 
@@ -23,6 +24,28 @@ public:
 
   enum PDCmd_t {
     HARDRESET = 1
+  };
+
+  enum QuickChargeConfig {
+    QC_CONF_NONE  = 0,
+    QC_CONF_PE    = BIT(0),
+    QC_CONF_SCP   = BIT(2),
+    QC_CONF_FCP   = BIT(3),
+    QC_CONF_QC    = BIT(4),
+    QC_CONF_PD    = BIT(5),
+    QC_CONF_PORT2 = BIT(6),
+    QC_CONF_PORT1 = BIT(7),
+    QC_CONF_AFC   = BIT(8 + 6),
+    QC_CONF_SFCP  = BIT(8 + 7),
+    QC_CONF_ALL   = QC_CONF_PE | QC_CONF_SCP | QC_CONF_FCP | QC_CONF_QC | QC_CONF_PD |
+      QC_CONF_PORT1 | QC_CONF_PORT2 | QC_CONF_AFC | QC_CONF_SFCP
+  };
+
+  enum QuickChargePowerClass {
+    QC_PWR_9V,
+    QC_PWR_12V,
+    QC_PWR_20V_1,
+    QC_PWR_20V_2
   };
 
 private:
@@ -53,6 +76,12 @@ public:
    * @brief 重新广播PDO. 改变最大电流后需要调用此函数或者重新插拔USB线来让设置生效.
    */
   void rebroadcastPDO();
+  /**
+   * @brief Enable or disable the support for certain quick charge features
+   * @param flags Multiple values of QuickChargeConfig combined with bitwise or
+   */
+  void setQuickChargeConfiguration(const uint16_t flags,
+      const enum QuickChargePowerClass power);
   /**
    * @brief 把PD所有组别的电流设置成5A. 如果你的芯片不是sw3518s请慎重使用
    */

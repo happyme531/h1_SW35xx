@@ -128,6 +128,20 @@ void SW35xx::setMaxCurrent5A() {
   lock_i2c_write();
 }
 
+void SW35xx::setQuickChargeConfiguration(const uint16_t flags,
+    const enum QuickChargePowerClass power) {
+  /* mask all available bits to avoid setting reserved bits */
+  const uint16_t validFlags = flags & QC_CONF_ALL;
+  const uint16_t validPower = power & QC_PWR_20V_2;
+  const uint8_t conf1 = validFlags;
+  const uint8_t conf2 = (validFlags >> 8) | (validPower << 2);
+
+  unlock_i2c_write();
+  i2cWriteReg8(SW35XX_QC_CONF1, conf1);
+  i2cWriteReg8(SW35XX_QC_CONF2, conf2);
+  lock_i2c_write();
+}
+
 void SW35xx::setMaxCurrentsFixed(uint32_t ma_5v, uint32_t ma_9v, uint32_t ma_12v, uint32_t ma_15v, uint32_t ma_20v){
   if(ma_5v > 5000) ma_5v = 5000;
   if(ma_9v > 5000) ma_9v = 5000;
