@@ -8,6 +8,14 @@
 #define SW35XX_PWR_STATUS 0x07
 #define SW35XX_I2C_ENABLE 0x12
 #define SW35XX_I2C_CTRL 0x13
+#define SW35XX_ADC_VIN_H 0x30
+#define SW35XX_ADC_VOUT_H 0x31
+#define SW35XX_ADC_VIN_VOUT_L 0x32
+#define SW35XX_ADC_IOUT_USBC_H 0x33
+#define SW35XX_ADC_IOUT_USBA_H 0x34
+#define SW35XX_ADC_IOUT_USBC_USBA_L 0x35
+#define SW35XX_ADC_TS_H 0x37
+#define SW35XX_ADC_TS_L 0x38
 #define SW35XX_ADC_DATA_TYPE 0x3a
 #define SW35XX_ADC_DATA_BUF_H 0x3b
 #define SW35XX_PD_SRC_REQ 0x70
@@ -64,27 +72,42 @@ uint16_t SW35xx::readADCDataBuffer(const enum ADCDataType type) {
   return value;
 }
 
-void SW35xx::readStatus() {
+void SW35xx::readStatus(const bool useADCDataBuffer) {
   uint16_t vin = 0;
   uint16_t vout = 0;
   uint16_t iout_usbc = 0;
   uint16_t iout_usba = 0;
 
-  //读取输入电压
-  vin = readADCDataBuffer(ADC_VIN);
+  if (useADCDataBuffer) {
+    //读取输入电压
+    vin = readADCDataBuffer(ADC_VIN);
+    //读取输出电压
+    vout = readADCDataBuffer(ADC_VOUT);
+    //读取接口1输出电流
+    iout_usbc = readADCDataBuffer(ADC_IOUT_USB_C);
+    //读取接口2输出电流
+    iout_usba = readADCDataBuffer(ADC_IOUT_USB_A);
+  } else {
+    const uint8_t vin_vout_low = i2cReadReg8(SW35XX_ADC_VIN_VOUT_L);
+    vin = i2cReadReg8(SW35XX_ADC_VIN_H) << 4;
+    vin |= vin_vout_low >> 4;
+    vout = i2cReadReg8(SW35XX_ADC_VOUT_H) << 4;
+    vout |= vin_vout_low & 0x0F;
+
+    const uint8_t iout_low = i2cReadReg8(SW35XX_ADC_IOUT_USBC_USBA_L);
+    iout_usbc = i2cReadReg8(SW35XX_ADC_IOUT_USBC_H) << 4;
+    iout_usbc |= iout_low >> 4;
+    iout_usba = i2cReadReg8(SW35XX_ADC_IOUT_USBA_H) << 4;
+    iout_usba |= iout_low & 0x0F;
+  }
+
   vin_mV = vin * 10;
-  //读取输出电压
-  vout = readADCDataBuffer(ADC_VOUT);
   vout_mV = vout * 6;
-  //读取接口1输出电流
-  iout_usbc = readADCDataBuffer(ADC_IOUT_USB_C);
   if (iout_usbc > 15) //在没有输出的情况下读到的数据是15
     iout_usbc_mA = iout_usbc * 5 / 2;
   else
     iout_usbc_mA = 0;
 
-  //读取接口2输出电流
-  iout_usba = readADCDataBuffer(ADC_IOUT_USB_A);
   if (iout_usba > 15)
     iout_usba_mA = iout_usba * 5 / 2;
   else

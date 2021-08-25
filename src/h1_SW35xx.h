@@ -75,7 +75,7 @@ public:
    * @brief 读取当前充电状态
    * 
    */
-  void readStatus();
+  void readStatus(const bool useADCDataBuffer=false);
   /**
    * @brief 发送PD命令
    * 
