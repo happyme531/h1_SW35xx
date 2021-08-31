@@ -1,4 +1,5 @@
 #pragma once
+#include "c_types.h"
 #include <Wire.h>
 #include <inttypes.h>
 
@@ -25,8 +26,46 @@ public:
     HARDRESET = 1
   };
 
+  enum QuickChargeConfig {
+    QC_CONF_NONE  = 0,
+    QC_CONF_PE    = BIT(0),
+    QC_CONF_SCP   = BIT(2),
+    QC_CONF_FCP   = BIT(3),
+    QC_CONF_QC    = BIT(4),
+    QC_CONF_PD    = BIT(5),
+    QC_CONF_PORT2 = BIT(6),
+    QC_CONF_PORT1 = BIT(7),
+    QC_CONF_AFC   = BIT(8 + 6),
+    QC_CONF_SFCP  = BIT(8 + 7),
+    QC_CONF_ALL   = QC_CONF_PE | QC_CONF_SCP | QC_CONF_FCP | QC_CONF_QC | QC_CONF_PD |
+      QC_CONF_PORT1 | QC_CONF_PORT2 | QC_CONF_AFC | QC_CONF_SFCP
+  };
+
+  enum QuickChargePowerClass {
+    QC_PWR_9V,
+    QC_PWR_12V,
+    QC_PWR_20V_1,
+    QC_PWR_20V_2
+  };
+
 private:
+  enum ADCDataType {
+    ADC_VIN = 1,
+    ADC_VOUT = 2,
+    ADC_IOUT_USB_C = 3,
+    ADC_IOUT_USB_A = 4,
+    ADC_TEMPERATURE = 6,
+  };
+
   TwoWire &_i2c;
+
+  int i2cReadReg8(const uint8_t reg);
+  int i2cWriteReg8(const uint8_t reg, const uint8_t data);
+
+  void unlock_i2c_write();
+  void lock_i2c_write();
+
+  uint16_t readADCDataBuffer(const enum ADCDataType type);
 
 public:
   SW35xx(TwoWire &i2c = Wire);
@@ -36,7 +75,11 @@ public:
    * @brief 读取当前充电状态
    * 
    */
-  void readStatus();
+  void readStatus(const bool useADCDataBuffer=false);
+  /**
+   * @brief Returns the voltage of the NTC in mV
+   */
+  float readTemperature(const bool useADCDataBuffer=false);
   /**
    * @brief 发送PD命令
    * 
@@ -47,6 +90,12 @@ public:
    * @brief 重新广播PDO. 改变最大电流后需要调用此函数或者重新插拔USB线来让设置生效.
    */
   void rebroadcastPDO();
+  /**
+   * @brief Enable or disable the support for certain quick charge features
+   * @param flags Multiple values of QuickChargeConfig combined with bitwise or
+   */
+  void setQuickChargeConfiguration(const uint16_t flags,
+      const enum QuickChargePowerClass power);
   /**
    * @brief 把PD所有组别的电流设置成5A. 如果你的芯片不是sw3518s请慎重使用
    */
@@ -92,12 +141,11 @@ public:
   /**
    * @brief 输出电流1(type-C)
    */
-  uint16_t iout1_mA;
+  uint16_t iout_usbc_mA;
   /**
    * @brief 输出电流2(type-A)
    */
-  uint16_t iout2_mA;
-  //float temperature;  //TODO
+  uint16_t iout_usba_mA;
   /**
    * @brief 快充协议
    */
