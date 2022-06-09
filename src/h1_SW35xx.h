@@ -1,7 +1,6 @@
 #pragma once
-#include "c_types.h"
+#include <cstdint>
 #include <Wire.h>
-#include <inttypes.h>
 
 namespace h1_SW35xx {
 
