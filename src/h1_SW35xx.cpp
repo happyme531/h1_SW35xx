@@ -1,6 +1,5 @@
 #include <Arduino.h>
 #include "h1_SW35xx.h"
-#include <Wire.h>
 
 #define SW35XX_ADDRESS 0x3c
 #define SW35XX_IC_VERSION 0x01

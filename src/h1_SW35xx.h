@@ -1,6 +1,10 @@
 #pragma once
-#include <cstdint>
+#include <stdint.h>
 #include <Wire.h>
+
+#ifndef BIT
+#define BIT(x) (1 << (x))
+#endif
 
 namespace h1_SW35xx {
 
